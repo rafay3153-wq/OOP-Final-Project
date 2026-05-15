@@ -172,4 +172,52 @@ class Instructor extends Person {
         //EXCEPTION HANDLING
     }
 }
+class Validationutility {
+    public static boolean validateEmail(String email) {
+        // EXCEPTION HANDLING
+        return true;
+    }
+
+    public static boolean validatePhoneNumber(String phoneNumber) {
+        // EXCEPTION HANDLING
+        return true;
+    }
+
+    public static boolean validateCourseCode(String courseCode) {
+        // EXCEPTION HANDLING
+        return true;
+    }
+
+    public static boolean validateName(String name) {
+        // EXCEPTION HANDLING
+        return true;
+    }
+
+    public static boolean validatePassword(String password) {
+        // EXCEPTION HANDLING
+        return true;
+    }
+
+    public static boolean validateGrade(String grade) {
+        // EXCEPTION HANDLING
+        return true;
+    }
+
+    public static boolean validateCreditHours(int semester) {
+        // EXCEPTION HANDLING
+        return true;
+    }
+
+    public static boolean validateid(int id) {
+        // EXCEPTION HANDLING
+        return true;
+    }
+
+    public static String sanitizeInput(String input) {
+        // EXCEPTION HANDLING
+        return input.trim();
+    }
+
+}
+
 
