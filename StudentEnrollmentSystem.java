@@ -1,7 +1,5 @@
 import java.util.*;
-import java.io.*; 
-
-    
+import java.io.*;
 
 abstract class Person {
     protected String name;
@@ -9,85 +7,95 @@ abstract class Person {
     protected String phoneNumber;
     protected int id;
     protected String password;
+
     public Person(String name, String email, String phoneNumber, int id, String password) {
         this.name = name;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.id = id;
         this.password = password;
-        //EXCEPTION HANDLING
     }
+
     public void setName(String name) {
         this.name = name;
-        //EXCEPTION HANDLING
     }
+
     public String getName() {
         return name;
     }
+
     public void setEmail(String email) {
         this.email = email;
-        //EXCEPTION HANDLING
     }
+
     public String getEmail() {
         return email;
     }
+
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
-        //EXCEPTION HANDLING
     }
+
     public String getPhoneNumber() {
         return phoneNumber;
     }
+
     public void setId(int id) {
         this.id = id;
-        //EXCEPTION HANDLING
     }
+
     public int getId() {
         return id;
     }
+
     public void setPassword(String password) {
         this.password = password;
-        //EXCEPTION HANDLING
     }
+
     public String getPassword() {
         return password;
     }
+
     public abstract String getDetails();
-    public boolean logIn(){
-        //EXCEPTION HANDLING
+
+    public boolean logIn() {
         return true;
-    };
-    public void logOut()
-    {
-        //EXCEPTION HANDLING
+    }
+
+    public void logOut() {
+        System.out.println(name + " logged out.");
     }
 }
+
 class Student extends Person {
-    private int Semester;
+    private int semester;
     private double cgpa;
     ArrayList<Course> enrolledCourses;
-    public Student(String name, String email, String phoneNumber, int Semester, double cgpa, int id, String password) {
+
+    public Student(String name, String email, String phoneNumber, int semester, double cgpa, int id, String password) {
         super(name, email, phoneNumber, id, password);
-        this.Semester = Semester;
+        this.semester = semester;
         this.cgpa = cgpa;
         enrolledCourses = new ArrayList<>();
     }
+
     public boolean registerCourse(Course course) {
         if (enrolledCourses.size() < 5) {
             enrolledCourses.add(course);
             return true;
-        } 
-        else {
-            return false; 
         }
+        return false;
     }
+
     public boolean dropCourse(Course course) {
-        enrolledCourses.remove(course);
-        return true;
+        return enrolledCourses.remove(course);
     }
+
     public String getDetails() {
-        return "Student Name: " + name + ", Email: " + email + ", Phone: " + phoneNumber + ", Semester: " + Semester + ", CGPA: " + cgpa;
+        return "Student Name: " + name + ", Email: " + email + ", Phone: " + phoneNumber + ", Semester: " + semester
+                + ", CGPA: " + cgpa;
     }
+
     public Transcript viewTranscript() {
         Transcript transcript = new Transcript(this);
         for (int i = 0; i < enrolledCourses.size(); i++) {
@@ -95,131 +103,360 @@ class Student extends Person {
         }
         return transcript;
     }
+
     public double calculateCGPA() {
         double totalPoints = 0;
         int totalCredits = 0;
         for (int i = 0; i < enrolledCourses.size(); i++) {
-            Course course = enrolledCourses.get(i);
-            totalPoints += course.getGradePoints();
-            totalCredits += course.getCredits();
+            Enrollment e = enrolledCourses.get(i).getEnrollmentFor(this);
+            if (e != null && e.isGraded()) {
+                totalPoints += e.getGradePoints() * enrolledCourses.get(i).getCreditHours();
+                totalCredits += enrolledCourses.get(i).getCreditHours();
+            }
         }
-        if(totalCredits == 0) {
-            return 0;
+        if (totalCredits == 0) {
+            return 0.0;
         }
-        return totalPoints / totalCredits;
+        return Math.round((totalPoints / totalCredits) * 100.0) / 100.0;
     }
+
     public void updateCGPA() {
         this.cgpa = calculateCGPA();
     }
-    public boolean isEligibleToEnroll(Course course) {
 
+    public boolean isEligibleToEnroll(Course course) {
+        if (course == null) {
+            return false;
+        }
+        if (enrolledCourses.contains(course)) {
+            return false;
+        }
+        if (enrolledCourses.size() >= 5) {
+            return false;
+        }
+        if (course.isFull()) {
+            return false;
+        }
+        return true;
     }
+
     public ArrayList<Course> getEnrolledCourses() {
         return enrolledCourses;
     }
+
     public ArrayList<Enrollment> viewGrades() {
         ArrayList<Enrollment> grades = new ArrayList<>();
         for (int i = 0; i < enrolledCourses.size(); i++) {
-            Course course = enrolledCourses.get(i);
-            Enrollment enrollment = new Enrollment(this, course);
-            grades.add(enrollment);
+            Enrollment e = enrolledCourses.get(i).getEnrollmentFor(this);
+            if (e != null) {
+                grades.add(e);
+            }
         }
         return grades;
     }
+
     public Transcript getTranscript() {
-        Transcript transcript = new Transcript(this);
-        for (int i = 0; i < enrolledCourses.size(); i++) {
-            Course course = enrolledCourses.get(i);
-            transcript.addCourse(course);
-        }
-        return transcript;
+        return viewTranscript();
     }
-    public int belonngsToSemester() {
-        return Semester;
+
+    public int belongsToSemester() {
+        return semester;
     }
 }
+
 class Instructor extends Person {
     private String department;
     private String designation;
-    private ArrayList<Course> AssignedCourses;
-    public Instructor(String name, String email, String phoneNumber, String department, String designation, int id, String password) {
+    private ArrayList<Course> assignedCourses;
+
+    public Instructor(String name, String email, String phoneNumber, String department, String designation, int id,
+            String password) {
         super(name, email, phoneNumber, id, password);
         this.department = department;
         this.designation = designation;
-        AssignedCourses = new ArrayList<>();
+        assignedCourses = new ArrayList<>();
     }
-    public void addCourseTaught(Course course) {
-        AssignedCourses.add(course);
-    }
-    public void removeCourseTaught(Course course) {
-        AssignedCourses.remove(course);
-    }
-    public String getDetails() {
-        return "Instructor Name: " + name + ", Email: " + email + ", Phone: " + phoneNumber + ", Department: " + department + ", Designation: " + designation;
-    }
-    public ArrayList<Course> getAssignedCourses() {
-        return AssignedCourses;
-    }
-    public ArrayList<Student> viewEnrolledStudents(Course course) {
-        ArrayList<Student> enrolledStudents = course.getEnrolledStudents();
 
-        return enrolledStudents;
+    public void addCourseTaught(Course course) {
+        assignedCourses.add(course);
     }
+
+    public void removeCourseTaught(Course course) {
+        assignedCourses.remove(course);
+    }
+
+    public String getDetails() {
+        return "Instructor Name: " + name + ", Email: " + email + ", Phone: " + phoneNumber + ", Department: "
+                + department + ", Designation: " + designation;
+    }
+
+    public ArrayList<Course> getAssignedCourses() {
+        return assignedCourses;
+    }
+
+    public ArrayList<Student> viewEnrolledStudents(Course course) {
+        return course.getEnrolledStudents();
+    }
+
     public void assignGrade(Enrollment enrollment, String grade) {
         enrollment.setGrade(grade);
     }
+
     public void submitGrades(Course course) {
-        //EXCEPTION HANDLING
+        ArrayList<Enrollment> enrollments = course.getEnrollments();
+        for (int i = 0; i < enrollments.size(); i++) {
+            if (!enrollments.get(i).isGraded()) {
+                System.out.println(
+                        enrollments.get(i).getStudent().getName() + " has no grade in " + course.getCourseName());
+            }
+        }
     }
 }
-class Validationutility {
+
+class Admin extends Person {
+    private int adminLevel;
+    private ArrayList<String> permissions;
+
+    public Admin(String name, String email, String phoneNumber, int id, String password) {
+        super(name, email, phoneNumber, id, password);
+        this.adminLevel = 0;
+        this.permissions = new ArrayList<>();
+    }
+
+    public String getDetails() {
+        return "Admin Name: " + name + ", Email: " + email + ", Phone: " + phoneNumber;
+    }
+
+    public boolean addCourse(Course course) {
+        return true;
+    }
+
+    public boolean removeCourse(Course course) {
+        return true;
+    }
+
+    public boolean addInstructor(Instructor instructor) {
+        return true;
+    }
+
+    public boolean removeInstructor(Instructor i) {
+        return true;
+    }
+
+    public boolean addStudent(Student student) {
+        return true;
+    }
+
+    public boolean removeStudent(Student student) {
+        return true;
+    }
+
+    public String generateReport() {
+        return "Report Generated";
+    }
+
+    public void assignInstructorToCourse(Instructor instructor, Course course) {
+        instructor.addCourseTaught(course);
+        course.setInstructor(instructor);
+    }
+
+    public void manageEnrollments(Student student, Course course, boolean enroll) {
+        if (enroll) {
+            student.registerCourse(course);
+        } else {
+            student.dropCourse(course);
+        }
+    }
+}
+
+class ValidationUtility {
     public static boolean validateEmail(String email) {
-        // EXCEPTION HANDLING
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        if (!email.contains("@")) {
+            return false;
+        }
+        if (!email.contains(".")) {
+            return false;
+        }
+
+        int atIndex = email.indexOf("@");
+        int dotIndex = email.lastIndexOf(".");
+
+        if (atIndex == 0) {
+            return false;
+        }
+        if (dotIndex < atIndex) {
+            return false;
+        }
+        if (dotIndex == email.length() - 1) {
+            return false;
+        }
+        if (email.indexOf("@") != email.lastIndexOf("@")) {
+            return false;
+        }
         return true;
     }
 
     public static boolean validatePhoneNumber(String phoneNumber) {
-        // EXCEPTION HANDLING
+        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            return false;
+        }
+        if (!phoneNumber.startsWith("+92")) {
+            return false;
+        }
+        if (phoneNumber.length() != 13) {
+            return false;
+        }
+        String digits = phoneNumber.substring(3); // strip "+92"
+        for (int i = 0; i < digits.length(); i++) {
+            char c = digits.charAt(i);
+            if (c < '0' || c > '9') {
+                return false;
+            }
+        }
         return true;
     }
 
     public static boolean validateCourseCode(String courseCode) {
-        // EXCEPTION HANDLING
+        if (courseCode == null || courseCode.trim().isEmpty()) {
+            return false;
+        }
+        if (courseCode.length() < 4 || courseCode.length() > 8) {
+            return false;
+        }
+        int splitAt = -1;
+        for (int i = 0; i < courseCode.length(); i++) {
+            if (courseCode.charAt(i) >= '0' && courseCode.charAt(i) <= '9') {
+                splitAt = i;
+                break;
+            }
+        }
+        if (splitAt == -1) {
+            return false;
+        }
+        if (splitAt == 0) {
+            return false;
+        }
+        String letters = courseCode.substring(0, splitAt);
+        String digits = courseCode.substring(splitAt);
+        if (letters.length() < 2 || letters.length() > 4) {
+            return false;
+        }
+        if (digits.length() < 2 || digits.length() > 4) {
+            return false;
+        }
+        for (int i = 0; i < letters.length(); i++) {
+            char c = letters.charAt(i);
+            if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) {
+                return false;
+            }
+        }
+        for (int i = 0; i < digits.length(); i++) {
+            if (digits.charAt(i) < '0' || digits.charAt(i) > '9') {
+                return false;
+            }
+        }
         return true;
     }
 
     public static boolean validateName(String name) {
-        // EXCEPTION HANDLING
+        if (name == null || name.trim().isEmpty()) {
+            return false;
+        }
+        if (name.trim().length() < 3 || name.trim().length() > 50) {
+            return false;
+        }
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (c >= '0' && c <= '9') {
+                return false;
+            }
+        }
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            boolean isLetter = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+            if (!isLetter) {
+                return false;
+            }
+        }
+        if (!name.contains(" ")) {
+            return false;
+        }
         return true;
     }
 
     public static boolean validatePassword(String password) {
-        // EXCEPTION HANDLING
+        if (password == null) {
+            return false;
+        }
+        if (password.length() < 8 || password.length() > 20) {
+            return false;
+        }
+        boolean hasDigit = false;
+        boolean hasUpper = false;
+        boolean hasLower = false;
+        for (int i = 0; i < password.length(); i++) {
+            char c = password.charAt(i);
+            if (c >= '0' && c <= '9') {
+                hasDigit = true;
+            }
+            if (c >= 'A' && c <= 'Z') {
+                hasUpper = true;
+            }
+            if (c >= 'a' && c <= 'z') {
+                hasLower = true;
+            }
+        }
+        if (!hasDigit) {
+            return false;
+        }
+        if (!hasUpper) {
+            return false;
+        }
+        if (!hasLower) {
+            return false;
+        }
         return true;
     }
 
     public static boolean validateGrade(String grade) {
-        // EXCEPTION HANDLING
-        return true;
+        if (grade == null || grade.trim().isEmpty()) {
+            return false;
+        }
+        String[] validGrades = { "A", "A-", "B+", "B", "B-",
+                "C+", "C", "C-", "D", "F" };
+        String trimmed = grade.trim().toUpperCase();
+        for (int i = 0; i < validGrades.length; i++) {
+            if (trimmed.equals(validGrades[i])) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    public static boolean validateCreditHours(int semester) {
-        // EXCEPTION HANDLING
-        return true;
+    public static boolean validateCreditHours(int creditHours) {
+        return creditHours >= 1 && creditHours <= 4;
     }
 
-    public static boolean validateid(int id) {
-        // EXCEPTION HANDLING
-        return true;
+    public static boolean validateId(int id) {
+        return id > 0;
     }
 
     public static String sanitizeInput(String input) {
-        // EXCEPTION HANDLING
-        return input.trim();
+        if (input == null) {
+            return "";
+        }
+        input = input.trim();
+        input = input.replace("<", "");
+        input = input.replace(">", "");
+        input = input.replace("\"", "");
+        input = input.replace(";", "");
+        input = input.replace("\\", "");
+        return input;
     }
-
 }
-
 class Course implements Serializable {
     private String courseId;
     private String courseName;
