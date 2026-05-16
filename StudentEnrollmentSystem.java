@@ -219,6 +219,7 @@ class Validationutility {
     }
 
 }
+
 class Course implements Serializable {
     private String courseId;
     private String courseName;
@@ -235,12 +236,23 @@ class Course implements Serializable {
         this.enrolledStudents = new ArrayList<>();
     }
     public boolean addStudent(Student student) {
-        if (enrolledStudents.size() < maxEnrollment && !enrolledStudents.contains(student)) {
-            enrolledStudents.add(student);
-            return true;
+    try {
+        if(student == null) {
+            throw new IllegalArgumentException("Student cannot be null.");
         }
+        if(isFull()) {
+            throw new IllegalStateException("Course is full.");
+        }
+        if(enrolledStudents.contains(student)) {
+            throw new IllegalArgumentException("Student already enrolled.");
+        }
+        enrolledStudents.add(student);
+        return true;
+    } catch(IllegalArgumentException | IllegalStateException e) {
+        System.out.println("Enrollment Error: " + e.getMessage());
         return false;
         }
+    }
         public boolean removeStudent(Student student) {
             return enrolledStudents.remove(student);
         }
@@ -288,14 +300,19 @@ class Enrollment implements Serializable {
         this.gradePoints = calculateGradePoints();
         this.semester = semester;
     }
-public void assignGrade(String grade) {
-    if (grade == null) {
-        return; 
-    }
-    if(grade.equalsIgnoreCase("A") || grade.equalsIgnoreCase("B") || grade.equalsIgnoreCase("C") || 
-       grade.equalsIgnoreCase("D") || grade.equalsIgnoreCase("F")) {
-        this.grade = grade.toUpperCase(); 
+    public void assignGrade(String grade) {
+    try {
+        if (grade == null) {
+            throw new IllegalArgumentException("Grade cannot be null.");
+        }
+        if(!(grade.equalsIgnoreCase("A") || grade.equalsIgnoreCase("B") || grade.equalsIgnoreCase("C") ||
+            grade.equalsIgnoreCase("D") || grade.equalsIgnoreCase("F"))) {
+            throw new IllegalArgumentException("Invalid grade entered.");
+        }
+        this.grade = grade.toUpperCase();
         this.gradePoints = calculateGradePoints();
+    } catch(Exception e) {
+        System.out.println("Grade Assignment Error: " + e.getMessage());
     }
 }
     public double getGradePoints() {
@@ -378,6 +395,10 @@ class Transcript implements Serializable {
         System.out.println("CGPA: " + String.format("%.2f", calculateCGPA()));
     }
     public double getSemesterGPA(int sem) {
+        try {
+        if (sem <= 0) {
+            throw new IllegalArgumentException("Semester must be greater than 0.");
+        }
         double totalGradePoints = 0.0;
         int totalCreditHours = 0;
         for (Enrollment e : completedCourses) {
@@ -386,12 +407,25 @@ class Transcript implements Serializable {
                 totalCreditHours += e.getCourse().getCreditHours();
             }
         }
-        return totalCreditHours > 0 ? totalGradePoints / totalCreditHours : 0.0;
+        if(totalCreditHours == 0) {
+            throw new IllegalStateException("No graded courses found for semester " + sem);
+        }
+        return totalGradePoints / totalCreditHours;
+    } catch(IllegalArgumentException | IllegalStateException e) {
+        System.out.println("Error calculating semester GPA: " + e.getMessage());
+        return 0.0;
+    } catch(ArithmeticException e) {
+        System.out.println("Arithmetic error calculating semester GPA: " + e.getMessage());
+        return 0.0;
+    } catch(Exception e) {
+        System.out.println("Unexpected error calculating semester GPA: " + e.getMessage());
+        return 0.0;
     }
+}
     public int getCompletedCredits() {
         int credits=0;
         for(Enrollment e : completedCourses) {
-            if(e.isGraded() && !e.getGrade().equalsIgnoreCase("F")) {
+            if(e.isGraded() && e.getGrade() != null && !e.getGrade().equalsIgnoreCase("F")) {
                 credits += e.getCourse().getCreditHours();
             }
         }
@@ -468,5 +502,68 @@ class PerformanceAnalyzer implements Serializable {
         return "PerformanceAnalyzer with " + enrollmentList.size() + " enrollments and " + courseList.size() + " courses.";
     }
 }
-
-
+class FileManager {
+    public static void saveCourses(ArrayList<Course> courses, String filename) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
+            out.writeObject(courses);
+            System.out.println("Courses saved to " + filename);
+        } catch (IOException e) {
+            System.out.println("Error saving courses: " + e.getMessage());
+        }
+    }
+    public static ArrayList<Course> loadCourses(String filename) {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
+            ArrayList<Course> courses = (ArrayList<Course>) in.readObject();
+            System.out.println("Courses loaded from " + filename);
+            return courses;
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error loading courses: " + e.getMessage());
+            return new ArrayList<>();
+        } catch (Exception e) {
+            System.out.println("Unexpected error: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    public static void saveEnrollments(ArrayList<Enrollment> enrollments, String filename) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
+            out.writeObject(enrollments);
+            System.out.println("Enrollments saved to " + filename);
+        } catch (IOException e) {
+            System.out.println("Error saving enrollments: " + e.getMessage());
+        }
+    }
+    public static ArrayList<Enrollment> loadEnrollments(String filename) {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
+            ArrayList<Enrollment> enrollments = (ArrayList<Enrollment>) in.readObject();
+            System.out.println("Enrollments loaded from " + filename);
+            return enrollments;
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error loading enrollments: " + e.getMessage());
+            return new ArrayList<>();
+        } catch (Exception e) {
+            System.out.println("Unexpected error: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    public static void saveTranscripts(ArrayList<Transcript> transcripts, String filename) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
+            out.writeObject(transcripts);
+            System.out.println("Transcripts saved to " + filename);
+        } catch (IOException e) {
+            System.out.println("Error saving transcripts: " + e.getMessage());
+        } 
+    }
+    public static ArrayList<Transcript> loadTranscripts(String filename) {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
+            ArrayList<Transcript> transcripts = (ArrayList<Transcript>) in.readObject();
+            System.out.println("Transcripts loaded from " + filename);
+            return transcripts;
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error loading transcripts: " + e.getMessage());
+            return new ArrayList<>();
+        } catch (Exception e) {
+            System.out.println("Unexpected error: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+}
