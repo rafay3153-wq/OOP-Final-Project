@@ -361,32 +361,26 @@ class ValidationUtility {
         return true;
     }
 
-    public static boolean validateName(String name) {
-        if (name == null || name.trim().isEmpty()) {
-            return false;
-        }
-        if (name.trim().length() < 3 || name.trim().length() > 50) {
-            return false;
-        }
-        for (int i = 0; i < name.length(); i++) {
-            char c = name.charAt(i);
-            if (c >= '0' && c <= '9') {
-                return false;
-            }
-        }
-        for (int i = 0; i < name.length(); i++) {
-            char c = name.charAt(i);
-            boolean isLetter = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
-            if (!isLetter) {
-                return false;
-            }
-        }
-        if (!name.contains(" ")) {
-            return false;
-        }
-        return true;
+   public static boolean validateName(String name) {
+    if (name == null || name.trim().isEmpty()) {
+        return false;
     }
-
+    if (name.trim().length() < 3 || name.trim().length() > 50) {
+        return false;
+    }
+    for (int i = 0; i < name.length(); i++) {
+        char c = name.charAt(i);
+        boolean isLetter = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+        boolean isSpace  = (c == ' ');
+        if (!isLetter && !isSpace) {
+            return false;
+        }
+    }
+    if (!name.contains(" ")) {
+        return false;
+    }
+    return true;
+}
     public static boolean validatePassword(String password) {
         if (password == null) {
             return false;
