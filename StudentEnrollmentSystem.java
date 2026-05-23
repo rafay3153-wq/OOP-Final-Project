@@ -458,6 +458,8 @@ class Course implements Serializable {
     private int maxEnrollment;
     private Instructor instructor;
     private ArrayList<Student> enrolledStudents;
+    private ArrayList<Enrollment> enrollments;
+
     public Course(String courseId, String courseName, int creditHours, int maxEnrollment, Instructor instructor) {
         this.courseId = courseId;
         this.courseName = courseName;
@@ -465,53 +467,94 @@ class Course implements Serializable {
         this.creditHours = creditHours;
         this.instructor = instructor;
         this.enrolledStudents = new ArrayList<>();
+        this.enrollments = new ArrayList<>();
     }
+
     public boolean addStudent(Student student) {
-    try {
-        if(student == null) {
-            throw new IllegalArgumentException("Student cannot be null.");
-        }
-        if(isFull()) {
-            throw new IllegalStateException("Course is full.");
-        }
-        if(enrolledStudents.contains(student)) {
-            throw new IllegalArgumentException("Student already enrolled.");
-        }
-        enrolledStudents.add(student);
-        return true;
-    } catch(IllegalArgumentException | IllegalStateException e) {
-        System.out.println("Enrollment Error: " + e.getMessage());
-        return false;
-        }
-    }
-        public boolean removeStudent(Student student) {
-            return enrolledStudents.remove(student);
-        }
-        public String getCourseDetails() {
-            return courseName +" ("+ courseId +") - " + creditHours + " credit hours, Instructor: " + instructor.getName();
-        }
-        public String getCourseId() {
-            return courseId;
-        }
-        public int getCreditHours() {
-            return creditHours;
-        }
-        public String toString() {
-            return courseName;
-        }
-        public Instructor getInstructor() {
-            return instructor;
-        }
-        public String getCourseName() {
-            return courseName;
-        }
-        public int getMaxEnrollment() {
-            return maxEnrollment;
-        }
-        public boolean isFull() {
-            return enrolledStudents.size() >= maxEnrollment;
+        try {
+            if (student == null) {
+                throw new IllegalArgumentException("Student cannot be null.");
+            }
+            if (isFull()) {
+                throw new IllegalStateException("Course is full.");
+            }
+            if (enrolledStudents.contains(student)) {
+                throw new IllegalArgumentException("Student already enrolled.");
+            }
+            enrolledStudents.add(student);
+            return true;
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            System.out.println("Enrollment Error: " + e.getMessage());
+            return false;
         }
     }
+
+    public boolean removeStudent(Student student) {
+        return enrolledStudents.remove(student);
+    }
+
+    public ArrayList<Enrollment> getEnrollments() {
+        return enrollments;
+    }
+
+    public ArrayList<Student> getEnrolledStudents() {
+        return enrolledStudents;
+    }
+
+    public Enrollment getEnrollmentFor(Student student) {
+        for (int i = 0; i < enrollments.size(); i++) {
+            if (enrollments.get(i).getStudent().equals(student)) {
+                return enrollments.get(i);
+            }
+        }
+        return null;
+    }
+
+    public void setInstructor(Instructor instructor) {
+        this.instructor = instructor;
+    }
+
+    public int getEnrolledCount() {
+        return enrolledStudents.size();
+    }
+
+    public void addEnrollment(Enrollment enrollment) {
+        enrollments.add(enrollment);
+    }
+
+    public String getCourseDetails() {
+        return courseName + " (" + courseId + ") - " + creditHours + " credit hours, Instructor: "
+                + instructor.getName();
+    }
+
+    public String getCourseId() {
+        return courseId;
+    }
+
+    public int getCreditHours() {
+        return creditHours;
+    }
+
+    public String toString() {
+        return courseName;
+    }
+
+    public Instructor getInstructor() {
+        return instructor;
+    }
+
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public int getMaxEnrollment() {
+        return maxEnrollment;
+    }
+
+    public boolean isFull() {
+        return enrolledStudents.size() >= maxEnrollment;
+    }
+}
 class Enrollment implements Serializable {
     private int enrollmentId;
     private Student student;
@@ -521,76 +564,104 @@ class Enrollment implements Serializable {
     private String enrollmentDate;
     private String status;
     private int semester;
-    public Enrollment(int enrollmentId, Student student, Course course, String grade, String enrollmentDate, String enrolled, int semester) {
+
+    public Enrollment(int enrollmentId, Student student, Course course, String grade, String enrollmentDate, String status, int semester) {
         this.enrollmentId = enrollmentId;
         this.student = student;
         this.course = course;
         this.grade = grade;
         this.enrollmentDate = enrollmentDate;
-        this.status = enrolled;
+        this.status = status;
         this.gradePoints = calculateGradePoints();
         this.semester = semester;
     }
-    public void assignGrade(String grade) {
-    try {
-        if (grade == null) {
-            throw new IllegalArgumentException("Grade cannot be null.");
+
+    public void setGrade(String grade) {
+        try {
+            if (grade == null || grade.trim().isEmpty()) {
+                throw new IllegalArgumentException("Grade cannot be null or empty.");
+            }
+            String[] validGrades = { "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D", "F" };
+            String trimmed = grade.trim().toUpperCase();
+            boolean found = false;
+            for (int i = 0; i < validGrades.length; i++) {
+                if (trimmed.equals(validGrades[i])) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                throw new IllegalArgumentException("Invalid grade: " + grade);
+            }
+            this.grade = trimmed;
+            this.gradePoints = calculateGradePoints();
+            this.status = "COMPLETED";
+        } catch (IllegalArgumentException e) {
+            System.out.println("Grade Error: " + e.getMessage());
         }
-        if(!(grade.equalsIgnoreCase("A") || grade.equalsIgnoreCase("B") || grade.equalsIgnoreCase("C") ||
-            grade.equalsIgnoreCase("D") || grade.equalsIgnoreCase("F"))) {
-            throw new IllegalArgumentException("Invalid grade entered.");
-        }
-        this.grade = grade.toUpperCase();
-        this.gradePoints = calculateGradePoints();
-    } catch(Exception e) {
-        System.out.println("Grade Assignment Error: " + e.getMessage());
     }
-}
-    public double getGradePoints() {
-        return gradePoints;
+
+    public Student getStudent() {
+        return student;
     }
-    public int getEnrollmentId() {
-        return enrollmentId;
-    }
+
     public double calculateGradePoints() {
         if (grade == null || grade.trim().isEmpty()) {
-    return 0.0;
-    }
-    switch (grade.toUpperCase()) {
-    case "A":
-        return 4.0;
-    case "B":
-        return 3.0;
-    case "C":
-        return 2.0;
-    case "D":
-        return 1.0;
-    case "F":
-        return 0.0;
-    default:
-        return 0.0; 
+            return 0.0;
+        }
+        switch (grade.toUpperCase().trim()) {
+            case "A":  return 4.0;
+            case "A-": return 3.7;
+            case "B+": return 3.3;
+            case "B":  return 3.0;
+            case "B-": return 2.7;
+            case "C+": return 2.3;
+            case "C":  return 2.0;
+            case "C-": return 1.7;
+            case "D":  return 1.0;
+            case "F":  return 0.0;
+            default:   return 0.0;
         }
     }
+
+    public void assignGrade(String grade) {
+        setGrade(grade);
+    }
+
     public boolean isGraded() {
         return grade != null && !grade.trim().isEmpty();
     }
+
     public String getEnrollmentDetails() {
         return student.getName() + " enrolled in " + course.getCourseDetails() + " on " + enrollmentDate;
     }
+
+    public double getGradePoints() {
+        return gradePoints;
+    }
+
+    public int getEnrollmentId() {
+        return enrollmentId;
+    }
+
     public Course getCourse() {
         return course;
     }
+
     public String getGrade() {
-    return grade;
+        return grade;
     }
+
     public String getStatus() {
         return status;
     }
-    public String toString() {
-        return student.getName() + " - " + course.getCourseName() + ": " + grade;
-    }
+
     public int getSemester() {
         return semester;
+    }
+
+    public String toString() {
+        return student.getName() + " - " + course.getCourseName() + ": " + grade;
     }
 }
 class Transcript implements Serializable {
@@ -600,6 +671,16 @@ class Transcript implements Serializable {
     private double cgpa;
     private String transcriptDate;
     private int semester;
+
+    public Transcript(Student student) {
+        this.student = student;
+        this.completedCourses = new ArrayList<>();
+        this.cgpa = 0.0;
+        this.transcriptId = 0;
+        this.semester = student.belongsToSemester();
+        this.transcriptDate = java.time.LocalDate.now().toString();
+    }
+
     public Transcript(Student student, int semester, int transcriptId) {
         this.student = student;
         this.completedCourses = new ArrayList<>();
@@ -608,67 +689,73 @@ class Transcript implements Serializable {
         this.semester = semester;
         this.transcriptDate = java.time.LocalDate.now().toString();
     }
-    public void addEnrollment(Enrollment e) {
-        if(e != null) {
+
+    public void addCourse(Course course) {
+        Enrollment e = course.getEnrollmentFor(student);
+        if (e != null) {
             completedCourses.add(e);
         }
     }
+
+    public void addEnrollment(Enrollment e) {
+        if (e != null) {
+            completedCourses.add(e);
+        }
+    }
+
     public void generateTranscript() {
         System.out.println("Transcript ID: " + transcriptId);
         System.out.println("Student: " + student.getName());
         System.out.println("Semester: " + semester);
         System.out.println("Generated Date: " + transcriptDate);
         System.out.println("Completed Courses:");
-        for (Enrollment e : completedCourses) {
-            System.out.println(e.getCourse().getCourseName() + " | Grade: " + e.getGrade() + " | Credits: " + e.getCourse().getCreditHours()
-);
+        for (int i = 0; i < completedCourses.size(); i++) {
+            Enrollment e = completedCourses.get(i);
+            System.out.println(e.getCourse().getCourseName() + " Grade: " + e.getGrade() + " Credits: " + e.getCourse().getCreditHours());
         }
         System.out.println("CGPA: " + String.format("%.2f", calculateCGPA()));
     }
+
     public double getSemesterGPA(int sem) {
         try {
-        if (sem <= 0) {
-            throw new IllegalArgumentException("Semester must be greater than 0.");
-        }
-        double totalGradePoints = 0.0;
-        int totalCreditHours = 0;
-        for (Enrollment e : completedCourses) {
-            if (e.getSemester() == sem && e.isGraded()) {
-                totalGradePoints += e.getGradePoints() * e.getCourse().getCreditHours();
-                totalCreditHours += e.getCourse().getCreditHours();
+            if (sem <= 0) {
+                throw new IllegalArgumentException("Semester must be greater than 0.");
             }
+            double totalGradePoints = 0.0;
+            int totalCreditHours = 0;
+            for (int i = 0; i < completedCourses.size(); i++) {
+                Enrollment e = completedCourses.get(i);
+                if (e.getSemester() == sem && e.isGraded()) {
+                    totalGradePoints += e.getGradePoints() * e.getCourse().getCreditHours();
+                    totalCreditHours += e.getCourse().getCreditHours();
+                }
+            }
+            if (totalCreditHours == 0) {
+                throw new IllegalStateException("No graded courses found for semester " + sem);
+            }
+            return totalGradePoints / totalCreditHours;
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            System.out.println("Error calculating semester GPA: " + e.getMessage());
+            return 0.0;
         }
-        if(totalCreditHours == 0) {
-            throw new IllegalStateException("No graded courses found for semester " + sem);
-        }
-        return totalGradePoints / totalCreditHours;
-    } catch(IllegalArgumentException | IllegalStateException e) {
-        System.out.println("Error calculating semester GPA: " + e.getMessage());
-        return 0.0;
-    } catch(ArithmeticException e) {
-        System.out.println("Arithmetic error calculating semester GPA: " + e.getMessage());
-        return 0.0;
-    } catch(Exception e) {
-        System.out.println("Unexpected error calculating semester GPA: " + e.getMessage());
-        return 0.0;
     }
-}
+
     public int getCompletedCredits() {
-        int credits=0;
-        for(Enrollment e : completedCourses) {
-            if(e.isGraded() && e.getGrade() != null && !e.getGrade().equalsIgnoreCase("F")) {
+        int credits = 0;
+        for (int i = 0; i < completedCourses.size(); i++) {
+            Enrollment e = completedCourses.get(i);
+            if (e.isGraded() && !e.getGrade().equalsIgnoreCase("F")) {
                 credits += e.getCourse().getCreditHours();
             }
         }
         return credits;
     }
-    public void exportToPDF() {
-        System.out.println("Exporting transcript to PDF for " + student.getName()+" to PDF...");
-    }
+
     public double calculateCGPA() {
         double totalGradePoints = 0.0;
         int totalCreditHours = 0;
-        for (Enrollment e : completedCourses) {
+        for (int i = 0; i < completedCourses.size(); i++) {
+            Enrollment e = completedCourses.get(i);
             if (e.isGraded()) {
                 totalGradePoints += e.getGradePoints() * e.getCourse().getCreditHours();
                 totalCreditHours += e.getCourse().getCreditHours();
@@ -677,37 +764,99 @@ class Transcript implements Serializable {
         this.cgpa = totalCreditHours > 0 ? totalGradePoints / totalCreditHours : 0.0;
         return cgpa;
     }
-    public int getSemester() {
-        return semester;
+    public void exportToPDF() {
+        System.out.println("Exporting transcript to PDF for " + student.getName()+" to PDF...");
     }
-    public String toString() {
-        return "Transcript for " + student.getName() + " with CGPA: " + String.format("%.2f", cgpa);
+    public int getSemester(){
+        return semester; 
+    }
+    public String toString(){ 
+        return "Transcript for " + student.getName() + " with CGPA: " + String.format("%.2f", cgpa); 
     }
 }
 class PerformanceAnalyzer implements Serializable {
     private ArrayList<Enrollment> enrollmentList;
     private ArrayList<Course> courseList;
+
     public PerformanceAnalyzer(ArrayList<Enrollment> enrollmentList, ArrayList<Course> courseList) {
         this.enrollmentList = enrollmentList;
         this.courseList = courseList;
     }
+
     public double calculateAverage(String courseId) {
         double total = 0.0;
         int count = 0;
-        for (Enrollment e : enrollmentList) {
-            if (e.getCourse().getCourseId().equals(courseId)) {
+        for (int i = 0; i < enrollmentList.size(); i++) {
+            Enrollment e = enrollmentList.get(i);
+            if (e.getCourse().getCourseId().equals(courseId) && e.isGraded()) {
                 total += e.getGradePoints();
                 count++;
             }
         }
         return count > 0 ? total / count : 0.0;
     }
+
+    public ArrayList<Student> findTopStudents(int n) {
+        ArrayList<Student> students = new ArrayList<>();
+        ArrayList<Double> cgpas = new ArrayList<>();
+        for (int i = 0; i < enrollmentList.size(); i++) {
+            Student s = enrollmentList.get(i).getStudent();
+            if (!students.contains(s)) {
+                students.add(s);
+                cgpas.add(s.calculateCGPA());
+            }
+        }
+
+        for (int i = 0; i < students.size() - 1; i++) {
+            for (int j = 0; j < students.size() - i - 1; j++) {
+                if (cgpas.get(j) < cgpas.get(j + 1)) {
+                    Student tempS = students.get(j);
+                    students.set(j, students.get(j + 1));
+                    students.set(j + 1, tempS);
+                    double tempC = cgpas.get(j);
+                    cgpas.set(j, cgpas.get(j + 1));
+                    cgpas.set(j + 1, tempC);
+                }
+            }
+        }
+
+        if (n > students.size()) n = students.size();
+        ArrayList<Student> topN = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            topN.add(students.get(i));
+        }
+        return topN;
+    }
+
+    public int getStudentRank(Student student) {
+        ArrayList<Student> top = findTopStudents(enrollmentList.size());
+        for (int i = 0; i < top.size(); i++) {
+            if (top.get(i).equals(student)) {
+                return i + 1;
+            }
+        }
+        return -1; 
+    }
+
+    public String generatePerformanceReport() {
+        String report = " PERFORMANCE REPORT \n";
+        for (int i = 0; i < courseList.size(); i++) {
+            Course c = courseList.get(i);
+            report += "Course: " + c.getCourseName()
+                   + " | Avg GPA: " + String.format("%.2f", calculateAverage(c.getCourseId()))
+                   + " | Pass Rate: " + String.format("%.0f%%", getCoursePassRate(c) * 100)
+                   + "\n";
+        }
+        return report;
+    }
+
     public String getPassFailStats(Course c) {
         int passCount = 0;
         int failCount = 0;
-        for (Enrollment e : enrollmentList) {
+        for (int i = 0; i < enrollmentList.size(); i++) {
+            Enrollment e = enrollmentList.get(i);
             if (e.getCourse().equals(c) && e.isGraded()) {
-                if (e.getGradePoints()>= 1.0) {
+                if (e.getGradePoints() >= 1.0) {
                     passCount++;
                 } else {
                     failCount++;
@@ -716,10 +865,12 @@ class PerformanceAnalyzer implements Serializable {
         }
         return "Course: " + c.getCourseName() + " - Pass: " + passCount + ", Fail: " + failCount;
     }
+
     public double getCoursePassRate(Course c) {
-        int total=0;
-        int passed=0;
-        for (Enrollment e : enrollmentList) {
+        int total = 0;
+        int passed = 0;
+        for (int i = 0; i < enrollmentList.size(); i++) {
+            Enrollment e = enrollmentList.get(i);
             if (e.getCourse().equals(c) && e.isGraded()) {
                 total++;
                 if (e.getGradePoints() >= 1.0) {
@@ -729,6 +880,7 @@ class PerformanceAnalyzer implements Serializable {
         }
         return total > 0 ? (double) passed / total : 0.0;
     }
+
     public String toString() {
         return "PerformanceAnalyzer with " + enrollmentList.size() + " enrollments and " + courseList.size() + " courses.";
     }
