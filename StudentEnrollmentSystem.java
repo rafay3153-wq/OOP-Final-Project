@@ -1,7 +1,7 @@
 import java.util.*;
 import java.io.*;
 
-abstract class Person {
+abstract class Person implements Serializable {
     protected String name;
     protected String email;
     protected String phoneNumber;
@@ -90,6 +90,8 @@ class Student extends Person {
     public boolean dropCourse(Course course) {
         return enrolledCourses.remove(course);
     }
+
+    public int getSemester() { return semester; }
 
     public String getDetails() {
         return "Student Name: " + name + ", Email: " + email + ", Phone: " + phoneNumber + ", Semester: " + semester
@@ -185,6 +187,9 @@ class Instructor extends Person {
         assignedCourses.remove(course);
     }
 
+    public String getDepartment() { return department; }
+    public String getDesignation() { return designation; }
+    
     public String getDetails() {
         return "Instructor Name: " + name + ", Email: " + email + ", Phone: " + phoneNumber + ", Department: "
                 + department + ", Designation: " + designation;
@@ -947,6 +952,71 @@ class FileManager {
         } catch (Exception e) {
             System.out.println("Unexpected error: " + e.getMessage());
             return new ArrayList<>();
+        }
+    }
+    public static void saveStudents(ArrayList<Student> students, String filename) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
+            out.writeObject(students);
+            System.out.println("Students saved to " + filename);
+        } catch (IOException e) {
+            System.out.println("Error saving students: " + e.getMessage());
+        }
+    }
+    public static ArrayList<Student> loadStudents(String filename) {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
+            return (ArrayList<Student>) in.readObject();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+    public static void saveInstructors(ArrayList<Instructor> instructors, String filename) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
+            out.writeObject(instructors);
+            System.out.println("Instructors saved to " + filename);
+        } catch (IOException e) {
+            System.out.println("Error saving instructors: " + e.getMessage());
+        }
+    }
+    public static ArrayList<Instructor> loadInstructors(String filename) {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
+            return (ArrayList<Instructor>) in.readObject();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+    public static void saveAdmins(ArrayList<Admin> admins, String filename) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
+            out.writeObject(admins);
+            System.out.println("Admins saved to " + filename);
+        } catch (IOException e) {
+            System.out.println("Error saving admins: " + e.getMessage());
+        }
+    }
+    public static ArrayList<Admin> loadAdmins(String filename) {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
+            return (ArrayList<Admin>) in.readObject();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+    }
+    public static void saveSystemState(ArrayList<Student> students, ArrayList<Instructor> instructors, ArrayList<Admin> admins, ArrayList<Course> courses, String filename) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
+            ArrayList<Object> state = new ArrayList<>();
+            state.add(students);
+            state.add(instructors);
+            state.add(admins);
+            state.add(courses);
+            out.writeObject(state);
+            System.out.println("System state saved to " + filename);
+        } catch (IOException e) {
+            System.out.println("Error saving system state: " + e.getMessage());
+        }
+    }
+    public static ArrayList<Object> loadSystemState(String filename) {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
+            return (ArrayList<Object>) in.readObject();
+        } catch (Exception e) {
+            return null;
         }
     }
 }
