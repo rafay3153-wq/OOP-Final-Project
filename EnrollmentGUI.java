@@ -3,23 +3,6 @@ import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
-/**
- * Enrollment Class - Handles course registration
- * 
- * This class uses backend classes from StudentEnrollmentSystem.java:
- * - Student class with registerCourse() method
- * - Course class with enrollment management
- * - Enrollment class for tracking enrollment records
- * - FileManager for saving enrollment data to files
- * 
- * Responsibilities:
- * - Display available courses in a table
- * - Allow students to search for courses
- * - Handle course enrollment with eligibility checking
- * - Create Enrollment objects and persist via FileManager
- * - Display enrollment status and messages
- * - Prevent enrollment in full courses or duplicate courses
- */
 public class EnrollmentGUI extends JFrame {
     private Student student;
     private JTextField searchField;
@@ -31,9 +14,7 @@ public class EnrollmentGUI extends JFrame {
     private ArrayList<Admin> allAdmins;
     private ArrayList<Course> allCourses;
 
-    /**
-     * Constructor accepts shared lists from Dashboard
-     */
+
     public EnrollmentGUI(Student student, ArrayList<Student> students, ArrayList<Instructor> instructors, ArrayList<Admin> admins, ArrayList<Course> courses) {
         this.student = student;
         this.allStudents = students;
@@ -257,11 +238,7 @@ public class EnrollmentGUI extends JFrame {
         populateTable(allCourses);
     }
 
-    /**
-     * Enroll student in selected course using backend registerCourse() method (FIXED VERSION)
-     * Creates an Enrollment object for grade tracking and saves via FileManager.
-     * Uses exception handling for all error cases.
-     */
+
     private void enrollSelected() {
         int selectedRow = coursesTable.getSelectedRow();
 

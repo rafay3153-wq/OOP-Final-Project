@@ -4,21 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 
-/**
- * AdminPanel Class - Handles admin functions
- * 
- * This class uses backend classes from StudentEnrollmentSystem.java:
- * - Admin class with management methods
- * - Student, Instructor, Course classes
- * - Calls backend methods for data management
- * - ValidationUtility for input validation
- * - FileManager for data persistence
- * 
- * Responsibilities:
- * - Manage users (add students, instructors)
- * - Manage courses (add, delete courses)
- * - Assign instructors to courses
- * - View system statistics
+
  */
 public class AdminPanel extends JFrame {
     private Admin admin;

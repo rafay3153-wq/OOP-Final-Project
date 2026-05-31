@@ -2,22 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
-import javax.swing.border.EmptyBorder; // Added for padding
+import javax.swing.border.EmptyBorder; 
 
-/**
- * Login Class - Handles user authentication
- * 
- * This class uses the backend classes from StudentEnrollmentSystem.java:
- * - Person, Student, Instructor, Admin classes
- * - ValidationUtility for input validation
- * - FileManager for loading user data
- * 
- * Responsibilities:
- * - Display login form with ID and password fields
- * - Validate user credentials using backend
- * - Authenticate users from backend data
- * - Launch Dashboard on successful login
- */
 public class Login extends JFrame {
     private JTextField idField;
     private JPasswordField passwordField;
@@ -205,7 +191,7 @@ public class Login extends JFrame {
         }
     }
 
-    /**
+
      * Authenticate user credentials using backend data
      * Checks against Student, Instructor, and Admin lists
      */

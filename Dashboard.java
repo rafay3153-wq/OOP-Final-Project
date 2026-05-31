@@ -3,22 +3,7 @@ import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
-/**
- * Dashboard Class - Main interface after login
- * 
- * This class uses backend classes from StudentEnrollmentSystem.java:
- * - Person, Student, Instructor, Admin classes
- * - Enrollment, Transcript, Course classes
- * - FileManager for data persistence
- * - ValidationUtility for input validation
- * 
- * Responsibilities:
- * - Display user-specific information based on role
- * - Show navigation menu for different modules
- * - Display data from backend (enrolled courses, CGPA, etc.)
- * - Provide access to Enrollment, Admin, and other modules
- * - Handle logout functionality
- */
+
 public class Dashboard extends JFrame {
     private Person currentUser;
     private JPanel mainContentPanel;
@@ -299,9 +284,9 @@ public class Dashboard extends JFrame {
         return panel;
     }
 
-    // ========================== STUDENT FEATURES ==========================
+    //  STUDENT FEATURES
 
-    /**
+
      * View Grades - Shows student's grades for all enrolled courses
      * Uses student.viewGrades() which returns ArrayList<Enrollment>
      */
@@ -466,12 +451,8 @@ public class Dashboard extends JFrame {
         mainContentPanel.repaint();
     }
 
-    // ========================== INSTRUCTOR FEATURES ==========================
+    //  INSTRUCTOR FEATURES 
 
-    /**
-     * Assign Grades - Lets instructor select a course and assign grades to students
-     * Uses instructor.getAssignedCourses(), course.getEnrolledStudents(), Enrollment.setGrade()
-     */
    private void assignGrades() {
         if (!(currentUser instanceof Instructor)) return;
 
@@ -701,12 +682,8 @@ public class Dashboard extends JFrame {
         mainContentPanel.repaint();
     }
 
-    // ========================== ADMIN FEATURES ==========================
+    // ADMIN FEATURES 
 
-    /**
-     * Manage Users - Shows all students and instructors with delete functionality
-     * Uses admin.removeStudent(), admin.removeInstructor()
-     */
     private void manageUsers() {
         if (!(currentUser instanceof Admin)) return;
 
@@ -784,7 +761,7 @@ public class Dashboard extends JFrame {
 
             mainContentPanel.add(Box.createVerticalStrut(15));
 
-            // ---- Instructors Section ----
+            // Instructors Section 
             JLabel instructorsTitle = new JLabel("Instructors (" + instructors.size() + ")");
             instructorsTitle.setFont(new Font("Tahoma", Font.BOLD, 14));
             instructorsTitle.setForeground(new Color(255, 140, 0));
@@ -858,10 +835,6 @@ public class Dashboard extends JFrame {
         mainContentPanel.repaint();
     }
 
-    /**
-     * Manage Courses - Shows all courses with add/delete functionality
-     * Uses admin.addCourse(), admin.removeCourse(), ValidationUtility, FileManager
-     */
     private void manageCourses() {
         if (!(currentUser instanceof Admin)) return;
 
@@ -1053,11 +1026,9 @@ public class Dashboard extends JFrame {
         mainContentPanel.repaint();
     }
 
-    // ========================== NAVIGATION ==========================
+    // NAVIGATION 
 
-    /**
-     * Open enrollment module - passes shared course list
-     */
+
     private void openEnrollment() {
         if (currentUser instanceof Student) {
             EnrollmentGUI enrollmentGUI = new EnrollmentGUI((Student) currentUser, students, instructors, admins, courses);
@@ -1088,9 +1059,7 @@ public class Dashboard extends JFrame {
         return "User";
     }
 
-    /**
-     * Logout and return to login screen
-     */
+
     private void logout() {
         int response = JOptionPane.showConfirmDialog(this, "Are you sure you want to logout?",
                 "Logout", JOptionPane.YES_NO_OPTION);
